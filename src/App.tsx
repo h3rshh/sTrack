@@ -9,19 +9,17 @@ function App() {
   
   const writeAPI = import.meta.env.VITE_THINGSPEAK_WRITE;
   const readAPI = import.meta.env.VITE_THINGSPEAK_READ;
-  const [lat, setLat] = useState(24.1234)
-  const [lon, setLon] = useState(54.1265)
 
-  const [readLat, setReadLat] = useState(54.1234)
-  const [readLon, setReadLon] = useState(43.5378)
+  const [lat, setLat] = useState(19.2297)
+  const [lon, setLon] = useState(72.8388)
+  const [stat, setStat] = useState(true)
 
   const setLocation = async () => {
     const newLat = (Math.random() * 60).toFixed(4);
     const newLon = (Math.random() * 60).toFixed(4);
-    setLat(newLat);
-    setLon(newLon);
+    const newStat = Math.random() >= 0.5;
     try{
-      const res = axios.get(`https://api.thingspeak.com/update?api_key=${writeAPI}&field1=${newLat}&field2=${newLon}`);
+      const res = axios.get(`https://api.thingspeak.com/update?api_key=${writeAPI}&field1=${newLat}&field2=${newLon}&field3=${newStat}`);
       // console.log(res);
     }
     catch(error){
@@ -31,13 +29,14 @@ function App() {
 
   const getLocation = async () => {
     try{
-      const res = await axios.get(`https://api.thingspeak.com/channels/2697393/feeds.json?api_key=${readAPI}&results=2`)
-      console.log("The recieved data is : ")
-      const lat = res.data.feeds[0].field1; 
-      const lon = res.data.feeds[0].field2;
-      console.log("Latitude : ", lat, " and Longitude : ", lon)
-      setReadLat(lat)
-      setReadLon(lon)
+      const res = await axios.get(`https://api.thingspeak.com/channels/2697393/feeds.json?api_key=${readAPI}&results=3`)
+      const recLat = res.data.feeds[0].field1; 
+      const recLon = res.data.feeds[0].field2;
+      const recStat = res.data.feeds[0].field3;
+      console.log("Latitude : ", recLat, " and Longitude : ", recLon, " and status : ", recStat)
+      setLat(recLat)
+      setLon(recLon)
+      setStat(recStat)
     }
     catch(error){
       console.log(error)
@@ -46,9 +45,9 @@ function App() {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setLocation();
-      getLocation();
-    }, 10000); 
+      // setLocation();
+      // getLocation();
+    }, 2000); 
 
     return () => clearInterval(intervalId);
   }, []); 
@@ -58,8 +57,8 @@ function App() {
       <Navbar />
       
       <div className='flex flex-row'>
-        <HeroSection lat={lat} lon={lon}/>
-        <MapSection />
+        <HeroSection lat={lat} lon={lon} stat={stat}/>
+        <MapSection lat={lat} lon={lon}/>
       </div>
     </div>
   )
