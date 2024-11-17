@@ -15,8 +15,9 @@ function App() {
   const [stat, setStat] = useState(true)
 
   const setLocation = async () => {
-    const newLat = (Math.random() * 60).toFixed(4);
-    const newLon = (Math.random() * 60).toFixed(4);
+    const newLat = (Math.random() * (19.23 - 18.89) + 18.89).toFixed(4);
+    const newLon = (Math.random() * (72.96 - 72.80) + 72.80).toFixed(4);    
+    
     const newStat = Math.random() >= 0.5;
     try{
       const res = axios.get(`https://api.thingspeak.com/update?api_key=${writeAPI}&field1=${newLat}&field2=${newLon}&field3=${newStat}`);
@@ -45,8 +46,8 @@ function App() {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // setLocation();
-      // getLocation();
+      setLocation();
+      getLocation();
     }, 2000); 
 
     return () => clearInterval(intervalId);
