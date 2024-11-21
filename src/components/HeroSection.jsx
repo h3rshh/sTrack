@@ -1,11 +1,11 @@
 import React from 'react';
 
-const HeroSection = ({ lat, lon, stat }) => {
+const HeroSection = ({ lat, lon, stat, xAcc, yAcc, zAcc, mag }) => {
   let currStat = '';
   if (stat === true || stat === 'true') {
-    currStat = 'Positive';
+    currStat = 'Active';
   } else {
-    currStat = 'Negative';
+    currStat = 'Inactive';
   }
 
   return (
@@ -25,6 +25,20 @@ const HeroSection = ({ lat, lon, stat }) => {
       </div>
       <div className="text-lg">
         <span className="font-semibold">Longitude:</span> {lon}
+      </div>
+
+      {/* Acceleration Data */}
+      <div className="text-lg mt-4">
+        <span className="font-semibold">X Acceleration:</span> {xAcc} m/s²
+      </div>
+      <div className="text-lg">
+        <span className="font-semibold">Y Acceleration:</span> {yAcc} m/s²
+      </div>
+      <div className="text-lg">
+        <span className="font-semibold">Z Acceleration:</span> {zAcc} m/s²
+      </div>
+      <div className="text-lg">
+        <span className="font-semibold">Magnitude:</span> {mag}
       </div>
     </div>
   );
