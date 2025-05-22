@@ -1,0 +1,99 @@
+const sendWhatsAppUpdate = async () => {
+    try {
+        const response = await fetch('http://localhost:3001/send-whatsapp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: 'inactive',
+                rider: 'Harsh Dugar',
+                phoneNumber: '+91' + phoneNum,
+                lat: lat,
+                lon: lon,
+                xAcc: xAcc, 
+                yAcc: yAcc, 
+                zAcc: zAcc, 
+                mag: mag,
+            }),
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+    } catch (error) {
+        console.error('Error sending WhatsApp notification:', error);
+    }
+};
+
+const getLocation = async () => {
+    try {
+      const authToken = "Op41VJXpVOvudHYXtPlvxSnsDO4nlWk2";
+      const templateId = "8t63hyGFMUyY0ZTd1vby-KeYLINAj1Ay"
+      const virtualPins = ["V0", "V1", "V2", "V3", "V4", "V5"];
+
+      const responses = await Promise.all(
+        virtualPins.map(pin => 
+          // axios.get(`https://blynk.cloud/external/api/get?token=${authToken}&pin=${pin}`)
+          axios.get(`https://blynk.cloud/external/api/get?token=${templateId}&pin=${pin}`)
+        )
+      );
+  
+      const allData = Object.fromEntries(
+        responses.map((response, index) => [virtualPins[index], response.data])
+      );
+
+      const parseDMS = (dmsString) => {
+        if (!dmsString) return null;
+        const match = dmsString.match(/(\d+)°\s*(\d+\.\d+)'\s*([NSEW])/);
+        if (!match) return null;
+        const degrees = parseFloat(match[1]);
+        const minutes = parseFloat(match[2]);
+        const direction = match[3];
+        let decimal = degrees + (minutes / 60);
+        if (direction === 'S' || direction === 'W') {
+          decimal = -decimal;
+        }
+        return decimal.toFixed(6);
+      };
+  
+      const safeConvert = (value, type = 'number') => {
+        if (type === 'coordinate') {
+          return parseDMS(value);
+        }
+        const converted = type === 'number' ? Number(value) : String(value);
+        return !isNaN(converted) ? converted : null;
+      };
+  
+      const processedData = {
+        xAcc: safeConvert(allData["V0"] * 9.81 / (10* 65536)),
+        yAcc: safeConvert(allData["V1"] * 9.81 / 65536),
+        zAcc: safeConvert(allData["V2"] * 9.81 / 65536),
+        lat: safeConvert(allData["V3"], 'coordinate'),
+        lon: safeConvert(allData["V4"], 'coordinate'),
+        mag: safeConvert(allData["V5"])
+      };
+  
+      if (Object.values(processedData).every(val => val !== null)) {
+        setXAcc(prev => processedData.xAcc.toString());
+        setYAcc(prev => processedData.yAcc.toString());
+        setZAcc(prev => processedData.zAcc.toString());
+        setLat(prev => processedData.lat);
+        setLon(prev => processedData.lon);
+        setMag(prev => processedData.mag.toString());
+        
+        console.log("Processed Data : ", processedData)
+        if (processedData.mag > 5000) {
+        // if(1){        
+          sendWhatsAppUpdate()
+          setStat(false);  
+        } else {
+          setStat(true);  
+        }
+      } else {
+        console.error("Invalid data received", processedData);
+      }
+    } catch (error) {
+      console.error("Blynk data fetch error:", error);
+    }
+};

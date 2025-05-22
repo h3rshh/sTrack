@@ -34,8 +34,9 @@ app.post('/send-whatsapp', (req, res) => {
     
     *Rider:* ${rider}
     *Status:* ${status === 'true' ? 'Positive' : 'Negative'}
-    *Location:* Latitude: ${lat}, 
-    *Longitude:* ${lon}
+    *Location:* 
+    Latitude: ${lat}, 
+    Longitude: ${lon},
 
     Please take necessary actions.
   `;
